@@ -204,6 +204,12 @@ static const QHash<Config::ConfigKey, ConfigDirective> configStrings = {
     {Config::KeeShare_Own, {QS("KeeShare/Own"), Roaming, {}}},
     {Config::KeeShare_Foreign, {QS("KeeShare/Foreign"), Roaming, {}}},
     {Config::KeeShare_Active, {QS("KeeShare/Active"), Roaming, {}}},
+    {Config::KeePush_Enabled,          {QS("KeePush/Enabled"),          Roaming, false}},
+    {Config::KeePush_AppName,          {QS("KeePush/AppName"),          Roaming, QString("KeePush")}},
+    {Config::KeePush_SocketName,       {QS("KeePush/SocketName"),       Roaming, QString("keepush")}},
+    {Config::KeePush_DoubleClickOpens, {QS("KeePush/DoubleClickOpens"), Roaming, false}},
+    {Config::KeePush_Protocol,         {QS("KeePush/Protocol"),         Roaming, 1}},
+    {Config::KeePush_Timeout,          {QS("KeePush/Timeout"),          Roaming, 1}},
 
     // PasswordGenerator
     {Config::PasswordGenerator_LowerCase, {QS("PasswordGenerator/LowerCase"), Roaming, true}},

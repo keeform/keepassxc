@@ -153,6 +153,9 @@ private slots:
     void updateEntryCountLabel();
     void focusSearchWidget();
     void enableMenuAndToolbar();
+#ifdef KPXC_FEATURE_KEEPUSH
+    void showKeePushSuccessMessage(const QString& appName);
+#endif
     void disableMenuAndToolbar();
     void clearSSHAgent();
 

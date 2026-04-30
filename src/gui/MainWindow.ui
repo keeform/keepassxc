@@ -344,6 +344,7 @@
     <addaction name="actionEntryRemovePasskey"/>
     <addaction name="separator"/>
     <addaction name="actionEntryOpenUrl"/>
+    <addaction name="actionEntryOpenUrlWithKeePush"/>
     <addaction name="actionEntryDownloadIcon"/>
     <addaction name="separator"/>
     <addaction name="actionEntryAddToAgent"/>
@@ -905,6 +906,11 @@
    </property>
    <property name="shortcut">
     <string notr="true">Ctrl+Shift+D</string>
+   </property>
+  </action>
+  <action name="actionEntryOpenUrlWithKeePush">
+   <property name="text">
+    <string>Open URL with &amp;KeePush</string>
    </property>
   </action>
   <action name="actionEntryOpenUrl">

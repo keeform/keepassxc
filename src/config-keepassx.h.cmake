@@ -19,6 +19,7 @@
 /* Advanced Features */
 #cmakedefine KPXC_FEATURE_BROWSER
 #cmakedefine KPXC_FEATURE_SSHAGENT
+#cmakedefine KPXC_FEATURE_KEEPUSH
 #cmakedefine KPXC_FEATURE_FDOSECRETS
 
 /* Minor Features */

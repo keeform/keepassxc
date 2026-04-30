@@ -17,6 +17,10 @@
  */
 
 #include "DatabaseWidget.h"
+#ifdef KPXC_FEATURE_KEEPUSH
+#include "core/Config.h"
+#include "keepush/KeePushConnect.h"
+#endif
 
 #include <QApplication>
 #include <QBoxLayout>
@@ -939,6 +943,83 @@ void DatabaseWidget::openUrl()
     }
 }
 
+#ifdef KPXC_FEATURE_KEEPUSH
+void DatabaseWidget::openUrlWithKeePush()
+{
+    const QString appName = config()->get(Config::KeePush_AppName).toString();
+    const QString socketName = KeePushConnect::toSocketName(appName);
+    if (!KeePushConnect::isHostRunning(appName, socketName)) {
+        QMessageBox::warning(this,
+                             tr("KeePush"),
+                             tr("The %1 host is not running.\n"
+                                "Please start the %1 host application and try again.")
+                                 .arg(appName));
+        return;
+    }
+    for (auto* entry : m_entryView->selectedEntries()) {
+        openUrlWithKeePushForEntry(entry);
+    }
+}
+
+void DatabaseWidget::openUrlWithKeePushForEntry(Entry* entry)
+{
+    Q_ASSERT(entry);
+    if (!entry) {
+        return;
+    }
+
+    const QString appName = config()->get(Config::KeePush_AppName).toString();
+    const QString socketName = KeePushConnect::toSocketName(appName);
+    if (!KeePushConnect::isHostRunning(appName, socketName)) {
+        QMessageBox::warning(this,
+                             tr("KeePush"),
+                             tr("The %1 host is not running.\n"
+                                "Please start the %1 host application and try again.")
+                                 .arg(appName));
+        return;
+    }
+
+    const QString urlString = entry->resolveMultiplePlaceholders(entry->url());
+    if (!urlString.startsWith("https://")) {
+        return;
+    }
+
+    const int protocol = config()->get(Config::KeePush_Protocol).toInt();
+
+    KeePushConnect::Result result;
+    if (protocol == 2) {
+        result = KeePushConnect::sendEntry(appName, socketName, entry);
+    } else {
+        const QString username = entry->resolveMultiplePlaceholders(entry->username());
+        const QString password = entry->resolveMultiplePlaceholders(entry->password());
+        result = KeePushConnect::sendCredentials(appName, socketName, urlString, username, password);
+    }
+
+    if (result == KeePushConnect::Result::Timeout) {
+        QMessageBox::warning(
+            this, tr("KeePush"), tr("%1 is not responding. It may be busy — please try again.").arg(appName));
+    } else if (result == KeePushConnect::Result::HostNotRunning) {
+        QMessageBox::warning(this,
+                             tr("KeePush"),
+                             tr("The %1 host is not running.\n"
+                                "Please start the %1 host application and try again.")
+                                 .arg(appName));
+    } else if (result == KeePushConnect::Result::Success) {
+        emit keepushCredentialsSent(appName);
+    }
+}
+
+bool DatabaseWidget::currentEntriesHaveHttpsUrl()
+{
+    for (auto* entry : m_entryView->selectedEntries()) {
+        if (entry->resolveMultiplePlaceholders(entry->url()).startsWith("https://")) {
+            return true;
+        }
+    }
+    return false;
+}
+#endif // KPXC_FEATURE_KEEPUSH
+
 void DatabaseWidget::downloadSelectedFavicons()
 {
 #ifdef KPXC_FEATURE_NETWORK
@@ -1582,7 +1663,16 @@ void DatabaseWidget::entryActivationSignalReceived(Entry* entry, EntryModel::Mod
                 break;
             case 0: // Open entry URL in browser (default)
             default:
-                openUrlForEntry(entry);
+#ifdef KPXC_FEATURE_KEEPUSH
+                if (entry->resolveMultiplePlaceholders(entry->url()).startsWith("https://")
+                    && config()->get(Config::KeePush_DoubleClickOpens).toBool()) {
+                    openUrlWithKeePushForEntry(entry);
+                } else {
+#endif
+                    openUrlForEntry(entry);
+#ifdef KPXC_FEATURE_KEEPUSH
+                }
+#endif
                 break;
             }
         }

@@ -68,6 +68,10 @@
 #include "fdosecrets/FdoSecretsPlugin.h"
 #endif
 
+#ifdef KPXC_FEATURE_KEEPUSH
+#include "core/Config.h"
+#include "keepush/KeePushSettingsPage.h"
+#endif
 #ifdef KPXC_FEATURE_BROWSER
 #include "browser/BrowserService.h"
 #endif
@@ -155,6 +159,9 @@ MainWindow::MainWindow()
     m_entryContextMenu->addAction(m_ui->actionEntryMoveDown);
     m_entryContextMenu->addSeparator();
     m_entryContextMenu->addAction(m_ui->actionEntryOpenUrl);
+#ifdef KPXC_FEATURE_KEEPUSH
+    m_entryContextMenu->addAction(m_ui->actionEntryOpenUrlWithKeePush);
+#endif
     m_entryContextMenu->addAction(m_ui->actionEntryDownloadIcon);
     m_entryContextMenu->addSeparator();
     m_entryContextMenu->addAction(m_ui->actionEntryAddToAgent);
@@ -291,6 +298,9 @@ MainWindow::MainWindow()
     m_ui->actionEntryCopyPassword->setShortcutVisibleInContextMenu(true);
     m_ui->actionEntryAutoTypeSequence->setShortcutVisibleInContextMenu(true);
     m_ui->actionEntryOpenUrl->setShortcutVisibleInContextMenu(true);
+#ifdef KPXC_FEATURE_KEEPUSH
+    m_ui->actionEntryOpenUrlWithKeePush->setShortcutVisibleInContextMenu(true);
+#endif
     m_ui->actionEntryCopyURL->setShortcutVisibleInContextMenu(true);
     m_ui->actionEntryCopyTitle->setShortcutVisibleInContextMenu(true);
     m_ui->actionEntryAddToAgent->setShortcutVisibleInContextMenu(true);
@@ -412,6 +422,9 @@ MainWindow::MainWindow()
     m_ui->actionGroupDelete->setIcon(icons()->icon("group-delete"));
     m_ui->actionGroupEmptyRecycleBin->setIcon(icons()->icon("group-empty-trash"));
     m_ui->actionEntryOpenUrl->setIcon(icons()->icon("web"));
+#ifdef KPXC_FEATURE_KEEPUSH
+    m_ui->actionEntryOpenUrlWithKeePush->setIcon(icons()->icon("keepush"));
+#endif
     m_ui->actionGroupDownloadFavicons->setIcon(icons()->icon("favicon-download"));
 
     m_ui->actionSettings->setIcon(icons()->icon("configure"));
@@ -529,6 +542,9 @@ MainWindow::MainWindow()
     m_actionMultiplexer.connect(
         m_ui->actionEntryAutoTypeURLEnter, SIGNAL(triggered()), SLOT(performAutoTypeURLEnter()));
     m_actionMultiplexer.connect(m_ui->actionEntryOpenUrl, SIGNAL(triggered()), SLOT(openUrl()));
+#ifdef KPXC_FEATURE_KEEPUSH
+    m_actionMultiplexer.connect(m_ui->actionEntryOpenUrlWithKeePush, SIGNAL(triggered()), SLOT(openUrlWithKeePush()));
+#endif
     m_actionMultiplexer.connect(m_ui->actionEntryDownloadIcon, SIGNAL(triggered()), SLOT(downloadSelectedFavicons()));
 #ifdef KPXC_FEATURE_SSHAGENT
     m_actionMultiplexer.connect(m_ui->actionEntryAddToAgent, SIGNAL(triggered()), SLOT(addToAgent()));
@@ -674,6 +690,10 @@ MainWindow::MainWindow()
     m_actionMultiplexer.connect(SIGNAL(databaseSyncInProgress()), this, SLOT(disableMenuAndToolbar()));
     m_actionMultiplexer.connect(SIGNAL(databaseSyncCompleted(QString)), this, SLOT(enableMenuAndToolbar()));
     m_actionMultiplexer.connect(SIGNAL(databaseSyncFailed(QString, const QString)), this, SLOT(enableMenuAndToolbar()));
+#ifdef KPXC_FEATURE_KEEPUSH
+    m_actionMultiplexer.connect(
+        SIGNAL(keepushCredentialsSent(QString)), this, SLOT(showKeePushSuccessMessage(QString)));
+#endif
     m_statusBarLabel = new QLabel(statusBar());
     m_statusBarLabel->setObjectName("statusBarLabel");
     statusBar()->addPermanentWidget(m_statusBarLabel);
@@ -972,6 +992,16 @@ void MainWindow::updateMenuActionState()
     m_ui->actionEntryAutoTypeURLEnter->setEnabled(singleEntrySelected && dbWidget->currentEntryHasUrl());
     m_ui->actionEntryAutoTypeTOTP->setVisible(singleEntrySelected && dbWidget->currentEntryHasTotp());
     m_ui->actionEntryOpenUrl->setEnabled(singleEntryOrEditing && dbWidget->currentEntryHasUrl());
+#ifdef KPXC_FEATURE_KEEPUSH
+    {
+        const QString appName = config()->get(Config::KeePush_AppName).toString();
+        m_ui->actionEntryOpenUrlWithKeePush->setText(tr("Open URL with &%1").arg(appName));
+        m_ui->actionEntryOpenUrlWithKeePush->setVisible(config()->get(Config::KeePush_Enabled).toBool());
+        m_ui->actionEntryOpenUrlWithKeePush->setEnabled(inDatabase && dbWidget->currentEntriesHaveHttpsUrl()
+                                                        && config()->get(Config::KeePush_Enabled).toBool());
+        m_ui->actionEntryOpenUrlWithKeePush->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_K);
+    }
+#endif
     m_ui->actionEntryTotp->setEnabled(singleEntrySelected && dbWidget->currentEntryHasTotp());
     m_ui->actionEntryCopyTotp->setEnabled(singleEntrySelected);
     m_ui->actionEntryCopyPasswordTotp->setEnabled(singleEntrySelected && dbWidget->currentEntryHasTotp());
@@ -1597,6 +1627,14 @@ void MainWindow::updateTrayIcon()
 
     QApplication::setQuitOnLastWindowClosed(!isTrayIconEnabled());
 }
+
+#ifdef KPXC_FEATURE_KEEPUSH
+void MainWindow::showKeePushSuccessMessage(const QString& appName)
+{
+    m_statusBarLabel->setText(tr("Credentials sent to %1").arg(appName));
+    QTimer::singleShot(2000, this, [this]() { updateEntryCountLabel(); });
+}
+#endif
 
 void MainWindow::updateProgressBar(int percentage, QString message)
 {

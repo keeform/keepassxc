@@ -179,6 +179,12 @@ public:
         KeeShare_Own,
         KeeShare_Foreign,
         KeeShare_Active,
+        KeePush_Enabled,
+        KeePush_AppName,
+        KeePush_SocketName,
+        KeePush_DoubleClickOpens,
+        KeePush_Protocol,
+        KeePush_Timeout,
 
         PasswordGenerator_LowerCase,
         PasswordGenerator_UpperCase,

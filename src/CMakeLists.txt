@@ -311,6 +311,10 @@ add_subdirectory(keeshare)
 set(keeshare_LIB keeshare)
 
 add_subdirectory(sshagent)
+add_subdirectory(keepush)
+if(KPXC_FEATURE_KEEPUSH)
+    set(keepushxc_LIB keepushxc)
+endif()
 if(KPXC_FEATURE_SSHAGENT)
     set(sshagent_LIB sshagent)
 endif()
@@ -349,7 +353,8 @@ target_link_libraries(keepassxc_gui
         ${browser_LIB}
         ${fdosecrets_LIB}
         ${keeshare_LIB}
-        ${sshagent_LIB})
+        ${sshagent_LIB}
+        ${keepushxc_LIB})
 
 if(APPLE)
     target_link_libraries(keepassxc_gui "-framework Foundation -framework AppKit -framework Carbon -framework Security -framework LocalAuthentication -framework ScreenCaptureKit")

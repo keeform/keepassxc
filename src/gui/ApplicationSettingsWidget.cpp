@@ -38,6 +38,9 @@
 #include "MessageBox.h"
 #ifdef KPXC_FEATURE_BROWSER
 #include "browser/BrowserSettingsPage.h"
+#ifdef KPXC_FEATURE_KEEPUSH
+#include "keepush/KeePushSettingsPage.h"
+#endif
 #endif
 
 class ApplicationSettingsWidget::ExtraPage
@@ -82,6 +85,9 @@ ApplicationSettingsWidget::ApplicationSettingsWidget(QWidget* parent)
     addPage(tr("Security"), icons()->icon("security-high"), m_secWidget);
 #ifdef KPXC_FEATURE_BROWSER
     addSettingsPage(new BrowserSettingsPage());
+#ifdef KPXC_FEATURE_KEEPUSH
+    addSettingsPage(new KeePushSettingsPage());
+#endif
 #endif
 
     if (!autoType()->isAvailable()) {

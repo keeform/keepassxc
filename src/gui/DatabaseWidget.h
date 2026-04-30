@@ -156,6 +156,9 @@ signals:
     void databaseSyncInProgress();
     void databaseSyncCompleted(const QString& syncName);
     void databaseSyncFailed(const QString& syncName, const QString& error);
+#ifdef KPXC_FEATURE_KEEPUSH
+    void keepushCredentialsSent(const QString& appName);
+#endif
     void databaseSyncUnlockFailed(const RemoteHandler::RemoteResult& result);
     void databaseSyncUnlocked(const RemoteHandler::RemoteResult& result);
     void unlockDatabaseInDialogForSync(const QString& filePath);
@@ -219,10 +222,17 @@ public slots:
     void performAutoTypeURLEnter();
     void setClipboardTextAndMinimize(const QString& text);
     void openUrl();
+#ifdef KPXC_FEATURE_KEEPUSH
+    void openUrlWithKeePush();
+    bool currentEntriesHaveHttpsUrl();
+#endif
     void downloadSelectedFavicons();
     void downloadAllFavicons();
     void downloadFaviconInBackground(Entry* entry);
     void openUrlForEntry(Entry* entry);
+#ifdef KPXC_FEATURE_KEEPUSH
+    void openUrlWithKeePushForEntry(Entry* entry);
+#endif
     void createGroup();
     void cloneGroup();
     void deleteGroup();
